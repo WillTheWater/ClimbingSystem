@@ -10,6 +10,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "Debugger/DebugHelper.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
