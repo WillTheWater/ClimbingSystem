@@ -3,34 +3,124 @@
 
 #include "ClimbingSystem/Public/SRS_MovementComponent.h"
 
+#include "GameFramework/Character.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "ClimbingSystem/Debugger/DebugHelper.h"
 
-// Sets default values for this component's properties
-USRS_MovementComponent::USRS_MovementComponent()
+TArray<FHitResult> USRS_MovementComponent::DoCapsuleTraceMultiByObject(const FVector& Start, const FVector& End,
+	bool bShowShape, bool bDrawPersistent)
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
-
-	// ...
+	TArray<FHitResult> Hits;
+	EDrawDebugTrace::Type DrawDebugType = EDrawDebugTrace::None;
+	if (bShowShape)
+	{
+		DrawDebugType = bDrawPersistent ? EDrawDebugTrace::Persistent : EDrawDebugTrace::ForOneFrame;
+	}
+	UKismetSystemLibrary::CapsuleTraceMultiForObjects
+	(
+		this,
+		Start,
+		End,
+		ClimbCapsuleRadius,
+		ClimbCapsuleHeight,
+		ClimbObjectTypes,
+		false,
+		TArray<AActor*>(),
+		DrawDebugType,
+		Hits,
+		false
+	);
+	return Hits;
 }
 
-
-// Called when the game starts
-void USRS_MovementComponent::BeginPlay()
+FHitResult USRS_MovementComponent::DoLineTraceSingleByObject(const FVector& Start, const FVector& End, bool bShowShape,
+	bool bDrawPersistent)
 {
-	Super::BeginPlay();
-
-	// ...
-	
+	FHitResult Hit;
+	EDrawDebugTrace::Type DrawDebugType = EDrawDebugTrace::None;
+	if (bShowShape)
+	{
+		DrawDebugType = bDrawPersistent ? EDrawDebugTrace::Persistent : EDrawDebugTrace::ForOneFrame;
+	}
+	UKismetSystemLibrary::LineTraceSingleForObjects
+	(
+		this,
+		Start,
+		End,
+		ClimbObjectTypes,
+		false,
+		TArray<AActor*>(),
+		DrawDebugType,
+		Hit,
+		false
+	);
+	return Hit;
 }
 
-
-// Called every frame
-void USRS_MovementComponent::TickComponent(float DeltaTime, ELevelTick TickType,
+void USRS_MovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,
                                            FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
 }
 
+bool USRS_MovementComponent::TraceClimbableSurfaces()
+{
+	const FVector StartOffset = UpdatedComponent->GetForwardVector() * 30.f;
+	const FVector Start = UpdatedComponent->GetComponentLocation() + StartOffset;
+	const FVector End = Start + UpdatedComponent->GetForwardVector();
+	ClimbableSurfacesHits = DoCapsuleTraceMultiByObject
+	(
+		Start,
+		End,
+		true,
+		true
+	);
+	return !ClimbableSurfacesHits.IsEmpty();
+}
+
+FHitResult USRS_MovementComponent::TraceFromEyeHeight(float TraceDistance, float StartOffset)
+{
+	const FVector ComponentLocation = UpdatedComponent->GetComponentLocation();
+	const FVector EyeHeightOffset = UpdatedComponent->GetUpVector() * (CharacterOwner->BaseEyeHeight + StartOffset);
+	const FVector Start = ComponentLocation + EyeHeightOffset;
+	const FVector End = Start + UpdatedComponent->GetForwardVector() * TraceDistance;
+	return DoLineTraceSingleByObject
+	(
+		Start,
+		End,
+		true,
+		true
+	);
+}
+
+void USRS_MovementComponent::ToggleClimbing(bool bEnableClimbing)
+{
+	if (bEnableClimbing)
+	{
+		if (CanClimb())
+		{
+			Debug::Print(TEXT("Can Climb!"));
+		}
+		else
+		{
+			Debug::Print(TEXT("Can't Climb!"));
+		}
+	}
+	else
+	{
+		// TODO: Exit Climbing
+	}
+}
+
+bool USRS_MovementComponent::IsClimbing() const
+{
+	return MovementMode == MOVE_Custom && CustomMovementMode == ECustomMovementMode::MOVE_Climb;
+}
+
+bool USRS_MovementComponent::CanClimb()
+{
+	if (IsFalling()) { return false; }
+	if (!TraceClimbableSurfaces()) { return false; }
+	if (!TraceFromEyeHeight(100.f, 0.f).bBlockingHit) { return false; }
+	return true;
+}
