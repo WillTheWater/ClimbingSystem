@@ -30,6 +30,7 @@ public:
 	void StartClimbing();
 	void StopClimbing();
 	void PhysClimbing(float DeltaTime, int32 Iterations);
+	void ProcessClimbableSurface();
 
 	TArray<FHitResult> ClimbableSurfacesHits;
 
@@ -46,11 +47,14 @@ private:
 	TArray<TEnumAsByte<EObjectTypeQuery>> ClimbObjectTypes;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Climbing", meta = (AllowPrivateAccess = "true"))
-	float ClimbCapsuleRadius = 50.f;
+	float ClimbCapsuleRadius { 50.f };
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Climbing", meta = (AllowPrivateAccess = "true"))
-	float ClimbCapsuleHeight = 72.f;
+	float ClimbCapsuleHeight { 72.f };
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Climbing", meta = (AllowPrivateAccess = "true"))
-	float MaxBreakClimbDeceleration = 400.f;
+	float MaxBreakClimbDeceleration { 400.f };
+
+	FVector CurrentClimbableSurfaceLocation { FVector::ZeroVector };
+	FVector CurrentClimbableSurfaceNormal { FVector::ZeroVector };
 };

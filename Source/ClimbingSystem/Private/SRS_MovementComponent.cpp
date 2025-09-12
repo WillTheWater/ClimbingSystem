@@ -98,7 +98,6 @@ bool USRS_MovementComponent::TraceClimbableSurfaces()
 	(
 		Start,
 		End,
-		true,
 		true
 	);
 	return !ClimbableSurfacesHits.IsEmpty();
@@ -113,9 +112,7 @@ FHitResult USRS_MovementComponent::TraceFromEyeHeight(float TraceDistance, float
 	return DoLineTraceSingleByObject
 	(
 		Start,
-		End,
-		true,
-		true
+		End
 	);
 }
 
@@ -169,6 +166,8 @@ void USRS_MovementComponent::PhysClimbing(float deltaTime, int32 Iterations)
 		return;
 	}
 
+	TraceClimbableSurfaces();
+	ProcessClimbableSurface();
 	
 	RestorePreAdditiveRootMotionVelocity();
 
@@ -194,4 +193,24 @@ void USRS_MovementComponent::PhysClimbing(float deltaTime, int32 Iterations)
 	{
 		Velocity = (UpdatedComponent->GetComponentLocation() - OldLocation) / deltaTime;
 	}
+}
+
+void USRS_MovementComponent::ProcessClimbableSurface()
+{
+	CurrentClimbableSurfaceLocation = FVector::ZeroVector;
+	CurrentClimbableSurfaceNormal = FVector::ZeroVector;
+
+	if (ClimbableSurfacesHits.IsEmpty()) { return; }
+
+	for (const FHitResult& Hit : ClimbableSurfacesHits)
+	{
+		CurrentClimbableSurfaceLocation += Hit.ImpactPoint;
+		CurrentClimbableSurfaceNormal += Hit.ImpactNormal;
+	}
+
+	CurrentClimbableSurfaceLocation /= ClimbableSurfacesHits.Num();
+	CurrentClimbableSurfaceNormal = CurrentClimbableSurfaceNormal.GetSafeNormal();
+
+	Debug::Print(TEXT("Climbable Surface Location: ") + CurrentClimbableSurfaceLocation.ToCompactString(), FColor::Cyan, 1);
+	Debug::Print(TEXT("Climbable Surface Normal: ") + CurrentClimbableSurfaceNormal.ToCompactString(), FColor::Orange, 2);
 }
