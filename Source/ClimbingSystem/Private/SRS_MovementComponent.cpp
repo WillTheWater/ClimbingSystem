@@ -184,6 +184,12 @@ void USRS_MovementComponent::PhysClimbing(float DeltaTime, int32 Iterations)
 
 	TraceClimbableSurfaces();
 	ProcessClimbableSurface();
+
+	if (ShouldStopClimbing())
+	{
+		StopClimbing();
+		return;
+	}
 	
 	RestorePreAdditiveRootMotionVelocity();
 
@@ -227,6 +233,15 @@ void USRS_MovementComponent::ProcessClimbableSurface()
 
 	CurrentClimbableSurfaceLocation /= ClimbableSurfacesHits.Num();
 	CurrentClimbableSurfaceNormal = CurrentClimbableSurfaceNormal.GetSafeNormal();
+}
+
+bool USRS_MovementComponent::ShouldStopClimbing()
+{
+	if (ClimbableSurfacesHits.IsEmpty()) { return true; }
+
+	const float DotResult = FVector::DotProduct(CurrentClimbableSurfaceNormal, FVector::UpVector);
+	const float DegreeDiff = FMath::RadiansToDegrees(FMath::Acos(DotResult));
+	return DegreeDiff <= 60.f;
 }
 
 FQuat USRS_MovementComponent::GetClimbRotation(float DeltaTime)

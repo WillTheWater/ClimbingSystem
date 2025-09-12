@@ -31,6 +31,7 @@ public:
 	void StopClimbing();
 	void PhysClimbing(float DeltaTime, int32 Iterations);
 	void ProcessClimbableSurface();
+	bool ShouldStopClimbing();
 	FQuat GetClimbRotation(float DeltaTime);
 	void SnapToClimbableSurface(float DeltaTime);
 
