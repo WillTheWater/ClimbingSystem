@@ -22,12 +22,16 @@ class CLIMBINGSYSTEM_API USRS_MovementComponent : public UCharacterMovementCompo
 
 public:
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
+	
 	bool TraceClimbableSurfaces();
 	FHitResult TraceFromEyeHeight(float TraceDistance, float StartOffset = 0.f);
 
 	void ToggleClimbing(bool bEnableClimbing);
 	bool IsClimbing() const;
 	bool CanClimb();
+	void StartClimbing();
+	void StopClimbing();
 
 	TArray<FHitResult> ClimbableSurfacesHits;
 	

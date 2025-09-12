@@ -6,9 +6,10 @@
 #include "GameFramework/Character.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "ClimbingSystem/Debugger/DebugHelper.h"
+#include "Components/CapsuleComponent.h"
 
 TArray<FHitResult> USRS_MovementComponent::DoCapsuleTraceMultiByObject(const FVector& Start, const FVector& End,
-	bool bShowShape, bool bDrawPersistent)
+                                                                       bool bShowShape, bool bDrawPersistent)
 {
 	TArray<FHitResult> Hits;
 	EDrawDebugTrace::Type DrawDebugType = EDrawDebugTrace::None;
@@ -63,6 +64,22 @@ void USRS_MovementComponent::TickComponent(float DeltaTime, enum ELevelTick Tick
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
+void USRS_MovementComponent::OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode)
+{
+	if (IsClimbing())
+	{
+		bOrientRotationToMovement = false;
+		CharacterOwner->GetCapsuleComponent()->SetCapsuleHalfHeight(48.f);
+	}
+	if (PreviousMovementMode == MOVE_Custom && PreviousCustomMode == ECustomMovementMode::MOVE_Climb)
+	{
+		bOrientRotationToMovement = true;
+		CharacterOwner->GetCapsuleComponent()->SetCapsuleHalfHeight(96.f);
+		StopMovementKeepPathing();
+	}
+	Super::OnMovementModeChanged(PreviousMovementMode, PreviousCustomMode);
+}
+
 bool USRS_MovementComponent::TraceClimbableSurfaces()
 {
 	const FVector StartOffset = UpdatedComponent->GetForwardVector() * 30.f;
@@ -100,15 +117,16 @@ void USRS_MovementComponent::ToggleClimbing(bool bEnableClimbing)
 		if (CanClimb())
 		{
 			Debug::Print(TEXT("Can Climb!"));
+			StartClimbing();
 		}
 		else
 		{
-			Debug::Print(TEXT("Can't Climb!"));
+			Debug::Print(TEXT("Can NOT Climb!"));
 		}
 	}
 	else
 	{
-		// TODO: Exit Climbing
+		StopClimbing();
 	}
 }
 
@@ -123,4 +141,14 @@ bool USRS_MovementComponent::CanClimb()
 	if (!TraceClimbableSurfaces()) { return false; }
 	if (!TraceFromEyeHeight(100.f, 0.f).bBlockingHit) { return false; }
 	return true;
+}
+
+void USRS_MovementComponent::StartClimbing()
+{
+	SetMovementMode(MOVE_Custom, ECustomMovementMode::MOVE_Climb);
+}
+
+void USRS_MovementComponent::StopClimbing()
+{
+	SetMovementMode(MOVE_Falling);
 }
