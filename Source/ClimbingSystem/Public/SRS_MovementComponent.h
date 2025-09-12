@@ -21,9 +21,6 @@ class CLIMBINGSYSTEM_API USRS_MovementComponent : public UCharacterMovementCompo
 	GENERATED_BODY()
 
 public:
-	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
-	
 	bool TraceClimbableSurfaces();
 	FHitResult TraceFromEyeHeight(float TraceDistance, float StartOffset = 0.f);
 
@@ -32,8 +29,14 @@ public:
 	bool CanClimb();
 	void StartClimbing();
 	void StopClimbing();
+	void PhysClimbing(float DeltaTime, int32 Iterations);
 
 	TArray<FHitResult> ClimbableSurfacesHits;
+
+protected:
+	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
+	virtual void PhysCustom(float DeltaTime, int32 Iterations) override;
 	
 private:
 	TArray<FHitResult> DoCapsuleTraceMultiByObject(const FVector& Start, const FVector& End, bool bShowShape = false, bool bDrawPersistent = false);
@@ -47,4 +50,7 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Climbing", meta = (AllowPrivateAccess = "true"))
 	float ClimbCapsuleHeight = 72.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Climbing", meta = (AllowPrivateAccess = "true"))
+	float MaxBreakClimbDeceleration = 400.f;
 };
