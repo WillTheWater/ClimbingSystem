@@ -75,6 +75,9 @@ void USRS_MovementComponent::OnMovementModeChanged(EMovementMode PreviousMovemen
 	{
 		bOrientRotationToMovement = true;
 		CharacterOwner->GetCapsuleComponent()->SetCapsuleHalfHeight(96.f);
+		const FRotator DirtyRotation = UpdatedComponent->GetComponentRotation();
+		const FRotator CleanRotation = FRotator(0.f, DirtyRotation.Yaw, 0.f);
+		UpdatedComponent->SetRelativeRotation(CleanRotation);
 		StopMovementKeepPathing();
 	}
 	Super::OnMovementModeChanged(PreviousMovementMode, PreviousCustomMode);

@@ -36,6 +36,9 @@ public:
 
 	TArray<FHitResult> ClimbableSurfacesHits;
 
+	FORCEINLINE FVector GetClimbableSurfaceLocation() const { return CurrentClimbableSurfaceLocation; }
+	FORCEINLINE FVector GetClimbableSurfaceNormal() const { return CurrentClimbableSurfaceNormal; }
+
 protected:
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;

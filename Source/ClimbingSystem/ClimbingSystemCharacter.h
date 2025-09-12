@@ -56,6 +56,8 @@ private:
 	UInputAction* ClimbAction;
 	
 	void Move(const FInputActionValue& Value);
+	void HandleGroundInput(const FInputActionValue& Value);
+	void HandleClimbInput(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void ClimbActionStarted(const FInputActionValue& Value);
 			
