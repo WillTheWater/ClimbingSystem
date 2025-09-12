@@ -89,6 +89,24 @@ void USRS_MovementComponent::PhysCustom(float DeltaTime, int32 Iterations)
 	Super::PhysCustom(DeltaTime, Iterations);
 }
 
+float USRS_MovementComponent::GetMaxSpeed() const
+{
+	if (IsClimbing())
+	{
+		return MaxClimbSpeed;
+	}
+	return Super::GetMaxSpeed();
+}
+
+float USRS_MovementComponent::GetMaxAcceleration() const
+{
+	if (IsClimbing())
+	{
+		return MaxClimbAcceleration;
+	}
+	return Super::GetMaxAcceleration();
+}
+
 bool USRS_MovementComponent::TraceClimbableSurfaces()
 {
 	const FVector StartOffset = UpdatedComponent->GetForwardVector() * 30.f;
@@ -122,12 +140,7 @@ void USRS_MovementComponent::ToggleClimbing(bool bEnableClimbing)
 	{
 		if (CanClimb())
 		{
-			Debug::Print(TEXT("Can Climb!"));
 			StartClimbing();
-		}
-		else
-		{
-			Debug::Print(TEXT("Can NOT Climb!"));
 		}
 	}
 	else
@@ -159,9 +172,9 @@ void USRS_MovementComponent::StopClimbing()
 	SetMovementMode(MOVE_Falling);
 }
 
-void USRS_MovementComponent::PhysClimbing(float deltaTime, int32 Iterations)
+void USRS_MovementComponent::PhysClimbing(float DeltaTime, int32 Iterations)
 {
-	if (deltaTime < MIN_TICK_TIME)
+	if (DeltaTime < MIN_TICK_TIME)
 	{
 		return;
 	}
@@ -173,26 +186,27 @@ void USRS_MovementComponent::PhysClimbing(float deltaTime, int32 Iterations)
 
 	if( !HasAnimRootMotion() && !CurrentRootMotion.HasOverrideVelocity() )
 	{
-		CalcVelocity(deltaTime, 0.f, true, MaxBreakClimbDeceleration);
+		CalcVelocity(DeltaTime, 0.f, true, MaxBreakClimbDeceleration);
 	}
 
-	ApplyRootMotionToVelocity(deltaTime);
+	ApplyRootMotionToVelocity(DeltaTime);
 
 	FVector OldLocation = UpdatedComponent->GetComponentLocation();
-	const FVector Adjusted = Velocity * deltaTime;
+	const FVector Adjusted = Velocity * DeltaTime;
 	FHitResult Hit(1.f);
-	SafeMoveUpdatedComponent(Adjusted, UpdatedComponent->GetComponentQuat(), true, Hit);
+	SafeMoveUpdatedComponent(Adjusted, GetClimbRotation(DeltaTime), true, Hit);
 
 	if (Hit.Time < 1.f)
 	{
-		HandleImpact(Hit, deltaTime, Adjusted);
+		HandleImpact(Hit, DeltaTime, Adjusted);
 		SlideAlongSurface(Adjusted, (1.f - Hit.Time), Hit.Normal, Hit, true);
 	}
 
 	if(!HasAnimRootMotion() && !CurrentRootMotion.HasOverrideVelocity() )
 	{
-		Velocity = (UpdatedComponent->GetComponentLocation() - OldLocation) / deltaTime;
+		Velocity = (UpdatedComponent->GetComponentLocation() - OldLocation) / DeltaTime;
 	}
+	SnapToClimbableSurface(DeltaTime);
 }
 
 void USRS_MovementComponent::ProcessClimbableSurface()
@@ -210,7 +224,30 @@ void USRS_MovementComponent::ProcessClimbableSurface()
 
 	CurrentClimbableSurfaceLocation /= ClimbableSurfacesHits.Num();
 	CurrentClimbableSurfaceNormal = CurrentClimbableSurfaceNormal.GetSafeNormal();
+}
 
-	Debug::Print(TEXT("Climbable Surface Location: ") + CurrentClimbableSurfaceLocation.ToCompactString(), FColor::Cyan, 1);
-	Debug::Print(TEXT("Climbable Surface Normal: ") + CurrentClimbableSurfaceNormal.ToCompactString(), FColor::Orange, 2);
+FQuat USRS_MovementComponent::GetClimbRotation(float DeltaTime)
+{
+	const FQuat CurrentRotation = UpdatedComponent->GetComponentQuat();
+	if (HasAnimRootMotion() || CurrentRootMotion.HasOverrideVelocity())
+	{
+		return CurrentRotation;
+	}
+	const FQuat TargetRotation = FRotationMatrix::MakeFromX(-CurrentClimbableSurfaceNormal).ToQuat();
+	return FMath::QInterpTo(CurrentRotation, TargetRotation, DeltaTime, 5.f);
+}
+
+void USRS_MovementComponent::SnapToClimbableSurface(float DeltaTime)
+{
+	const FVector CompomentForward = UpdatedComponent->GetForwardVector();
+	const FVector CompomentLocation = UpdatedComponent->GetComponentLocation();
+	const FVector ProjectedVector = (CurrentClimbableSurfaceLocation - CompomentLocation).ProjectOnTo(CompomentForward);
+	const FVector SnapLocation = -CurrentClimbableSurfaceNormal * ProjectedVector.Length();
+
+	UpdatedComponent->MoveComponent
+	(
+		SnapLocation * DeltaTime * MaxClimbSpeed,
+		UpdatedComponent->GetComponentQuat(),
+		true
+	);
 }

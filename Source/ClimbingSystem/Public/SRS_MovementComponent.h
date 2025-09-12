@@ -31,6 +31,8 @@ public:
 	void StopClimbing();
 	void PhysClimbing(float DeltaTime, int32 Iterations);
 	void ProcessClimbableSurface();
+	FQuat GetClimbRotation(float DeltaTime);
+	void SnapToClimbableSurface(float DeltaTime);
 
 	TArray<FHitResult> ClimbableSurfacesHits;
 
@@ -38,6 +40,8 @@ protected:
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
 	virtual void PhysCustom(float DeltaTime, int32 Iterations) override;
+	virtual float GetMaxSpeed() const override;
+	virtual float GetMaxAcceleration() const override;
 	
 private:
 	TArray<FHitResult> DoCapsuleTraceMultiByObject(const FVector& Start, const FVector& End, bool bShowShape = false, bool bDrawPersistent = false);
@@ -54,6 +58,12 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Climbing", meta = (AllowPrivateAccess = "true"))
 	float MaxBreakClimbDeceleration { 400.f };
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Climbing", meta = (AllowPrivateAccess = "true"))
+	float MaxClimbSpeed { 100.f };
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Climbing", meta = (AllowPrivateAccess = "true"))
+	float MaxClimbAcceleration { 300.f };
 
 	FVector CurrentClimbableSurfaceLocation { FVector::ZeroVector };
 	FVector CurrentClimbableSurfaceNormal { FVector::ZeroVector };
