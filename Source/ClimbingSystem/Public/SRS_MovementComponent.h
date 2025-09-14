@@ -6,6 +6,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "SRS_MovementComponent.generated.h"
 
+class UAnimMontage;
+class UAnimInstance;
+
 UENUM(BlueprintType)
 namespace ECustomMovementMode
 {
@@ -34,6 +37,10 @@ public:
 	bool ShouldStopClimbing();
 	FQuat GetClimbRotation(float DeltaTime);
 	void SnapToClimbableSurface(float DeltaTime);
+	void PlayClimbMontage(UAnimMontage* MontageToPlay);
+
+	UFUNCTION()
+	void OnClimbMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 	TArray<FHitResult> ClimbableSurfacesHits;
 
@@ -41,6 +48,7 @@ public:
 	FORCEINLINE FVector GetClimbableSurfaceNormal() const { return CurrentClimbableSurfaceNormal; }
 
 protected:
+	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
 	virtual void PhysCustom(float DeltaTime, int32 Iterations) override;
@@ -71,4 +79,10 @@ private:
 
 	FVector CurrentClimbableSurfaceLocation { FVector::ZeroVector };
 	FVector CurrentClimbableSurfaceNormal { FVector::ZeroVector };
+
+	UPROPERTY()
+	UAnimInstance* OwningPlayerAnimInstance;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Climbing", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* IdleToClimb;
 };

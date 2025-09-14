@@ -58,6 +58,18 @@ FHitResult USRS_MovementComponent::DoLineTraceSingleByObject(const FVector& Star
 	return Hit;
 }
 
+void USRS_MovementComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	OwningPlayerAnimInstance = CharacterOwner->GetMesh()->GetAnimInstance();
+	if (OwningPlayerAnimInstance)
+	{
+		OwningPlayerAnimInstance->OnMontageEnded.AddDynamic(this, &ThisClass::OnClimbMontageEnded);
+		OwningPlayerAnimInstance->OnMontageBlendingOut.AddDynamic(this, &ThisClass::OnClimbMontageEnded);
+	}
+}
+
 void USRS_MovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,
                                            FActorComponentTickFunction* ThisTickFunction)
 {
@@ -143,7 +155,7 @@ void USRS_MovementComponent::ToggleClimbing(bool bEnableClimbing)
 	{
 		if (CanClimb())
 		{
-			StartClimbing();
+			PlayClimbMontage(IdleToClimb);
 		}
 	}
 	else
@@ -268,4 +280,17 @@ void USRS_MovementComponent::SnapToClimbableSurface(float DeltaTime)
 		UpdatedComponent->GetComponentQuat(),
 		true
 	);
+}
+
+void USRS_MovementComponent::PlayClimbMontage(UAnimMontage* MontageToPlay)
+{
+	if (!MontageToPlay) { return; }
+	if (!OwningPlayerAnimInstance) { return; }
+	if (OwningPlayerAnimInstance->IsAnyMontagePlaying()) { return; }
+	OwningPlayerAnimInstance->Montage_Play(MontageToPlay);
+}
+
+void USRS_MovementComponent::OnClimbMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	Debug::Print(TEXT("Montage ended!"));
 }
