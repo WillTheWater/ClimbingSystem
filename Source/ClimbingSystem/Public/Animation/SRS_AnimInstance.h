@@ -47,4 +47,9 @@ private:
 	bool bIsFalling { false };
 
 	void GetIsFalling();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Climbing", meta = (AllowPrivateAccess = "true"))
+	bool bIsClimbing { false };
+
+	void GetIsClimbing();
 };

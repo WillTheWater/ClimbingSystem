@@ -292,5 +292,8 @@ void USRS_MovementComponent::PlayClimbMontage(UAnimMontage* MontageToPlay)
 
 void USRS_MovementComponent::OnClimbMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-	Debug::Print(TEXT("Montage ended!"));
+	if (Montage == IdleToClimb)
+	{
+		StartClimbing();
+	}
 }
