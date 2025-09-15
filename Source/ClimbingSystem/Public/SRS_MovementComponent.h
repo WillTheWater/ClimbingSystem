@@ -46,6 +46,7 @@ public:
 
 	FORCEINLINE FVector GetClimbableSurfaceLocation() const { return CurrentClimbableSurfaceLocation; }
 	FORCEINLINE FVector GetClimbableSurfaceNormal() const { return CurrentClimbableSurfaceNormal; }
+	FVector GetUnrotatedClimbVelocity() const;
 
 protected:
 	virtual void BeginPlay() override;

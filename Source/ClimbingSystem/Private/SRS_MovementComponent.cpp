@@ -7,6 +7,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "ClimbingSystem/Debugger/DebugHelper.h"
 #include "Components/CapsuleComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 TArray<FHitResult> USRS_MovementComponent::DoCapsuleTraceMultiByObject(const FVector& Start, const FVector& End,
                                                                        bool bShowShape, bool bDrawPersistent)
@@ -56,6 +57,11 @@ FHitResult USRS_MovementComponent::DoLineTraceSingleByObject(const FVector& Star
 		false
 	);
 	return Hit;
+}
+
+FVector USRS_MovementComponent::GetUnrotatedClimbVelocity() const
+{
+	return UKismetMathLibrary::Quat_UnrotateVector(UpdatedComponent->GetComponentQuat(), Velocity);
 }
 
 void USRS_MovementComponent::BeginPlay()

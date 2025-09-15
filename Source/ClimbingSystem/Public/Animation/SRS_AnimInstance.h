@@ -52,4 +52,9 @@ private:
 	bool bIsClimbing { false };
 
 	void GetIsClimbing();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Climbing", meta = (AllowPrivateAccess = "true"))
+	FVector ClimbVelocity { FVector::ZeroVector };
+
+	void GetClimbVelocity();
 };

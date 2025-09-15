@@ -28,6 +28,7 @@ void USRS_AnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	GetShouldMove();
 	GetIsFalling();
 	GetIsClimbing();
+	GetClimbVelocity();
 }
 
 void USRS_AnimInstance::GetGroundSpeed()
@@ -55,4 +56,9 @@ void USRS_AnimInstance::GetIsFalling()
 void USRS_AnimInstance::GetIsClimbing()
 {
 	bIsClimbing = CustomMovementComponent->IsClimbing();
+}
+
+void USRS_AnimInstance::GetClimbVelocity()
+{
+	ClimbVelocity = CustomMovementComponent->GetUnrotatedClimbVelocity();
 }
