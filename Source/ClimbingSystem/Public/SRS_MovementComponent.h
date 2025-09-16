@@ -38,6 +38,7 @@ public:
 	bool CheckHasReachedGround();
 	FQuat GetClimbRotation(float DeltaTime);
 	void SnapToClimbableSurface(float DeltaTime);
+	bool HasReachLedge();
 	void PlayClimbMontage(UAnimMontage* MontageToPlay);
 
 	UFUNCTION()

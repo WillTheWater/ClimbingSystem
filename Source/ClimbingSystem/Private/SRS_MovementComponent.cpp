@@ -151,7 +151,8 @@ FHitResult USRS_MovementComponent::TraceFromEyeHeight(float TraceDistance, float
 	return DoLineTraceSingleByObject
 	(
 		Start,
-		End
+		End,
+		true
 	);
 }
 
@@ -234,6 +235,10 @@ void USRS_MovementComponent::PhysClimbing(float DeltaTime, int32 Iterations)
 		Velocity = (UpdatedComponent->GetComponentLocation() - OldLocation) / DeltaTime;
 	}
 	SnapToClimbableSurface(DeltaTime);
+	if (HasReachLedge())
+	{
+		Debug::Print("Ledge Reached");
+	}
 }
 
 void USRS_MovementComponent::ProcessClimbableSurface()
@@ -265,10 +270,10 @@ bool USRS_MovementComponent::ShouldStopClimbing()
 bool USRS_MovementComponent::CheckHasReachedGround()
 {
 	const FVector DownVector = -UpdatedComponent->GetUpVector();
-	const FVector StartOffset = DownVector * 50.f;
+	const FVector StartOffset = DownVector * 120.f;
 	const FVector Start = UpdatedComponent->GetComponentLocation() + StartOffset;
 	const FVector End = Start + DownVector;
-	TArray<FHitResult> Hits = DoCapsuleTraceMultiByObject(Start, End, true);
+	TArray<FHitResult> Hits = DoCapsuleTraceMultiByObject(Start, End);
 	if (Hits.IsEmpty()) { return false; }
 	for (const FHitResult& Hit : Hits)
 	{
@@ -303,6 +308,23 @@ void USRS_MovementComponent::SnapToClimbableSurface(float DeltaTime)
 		UpdatedComponent->GetComponentQuat(),
 		true
 	);
+}
+
+bool USRS_MovementComponent::HasReachLedge()
+{
+	FHitResult LedgeHit = TraceFromEyeHeight(100.f, 50.f);
+	if (!LedgeHit.bBlockingHit)
+	{
+		const FVector WalkableSurface = LedgeHit.TraceEnd;
+		const FVector DownVector = -UpdatedComponent->GetUpVector();
+		const FVector WalkableSurfaceEnd = WalkableSurface + DownVector * 100.f;
+		FHitResult WalkableSurfaceHit = DoLineTraceSingleByObject(WalkableSurface, WalkableSurfaceEnd, true);
+		if (WalkableSurfaceHit.bBlockingHit && GetUnrotatedClimbVelocity().Z > 10.f)
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 void USRS_MovementComponent::PlayClimbMontage(UAnimMontage* MontageToPlay)
