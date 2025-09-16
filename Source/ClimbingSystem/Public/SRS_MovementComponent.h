@@ -35,6 +35,7 @@ public:
 	void PhysClimbing(float DeltaTime, int32 Iterations);
 	void ProcessClimbableSurface();
 	bool ShouldStopClimbing();
+	bool CheckHasReachedGround();
 	FQuat GetClimbRotation(float DeltaTime);
 	void SnapToClimbableSurface(float DeltaTime);
 	void PlayClimbMontage(UAnimMontage* MontageToPlay);

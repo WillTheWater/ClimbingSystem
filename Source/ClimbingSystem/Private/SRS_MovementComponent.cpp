@@ -203,7 +203,7 @@ void USRS_MovementComponent::PhysClimbing(float DeltaTime, int32 Iterations)
 	TraceClimbableSurfaces();
 	ProcessClimbableSurface();
 
-	if (ShouldStopClimbing())
+	if (ShouldStopClimbing() || CheckHasReachedGround())
 	{
 		StopClimbing();
 		return;
@@ -260,6 +260,23 @@ bool USRS_MovementComponent::ShouldStopClimbing()
 	const float DotResult = FVector::DotProduct(CurrentClimbableSurfaceNormal, FVector::UpVector);
 	const float DegreeDiff = FMath::RadiansToDegrees(FMath::Acos(DotResult));
 	return DegreeDiff <= 60.f;
+}
+
+bool USRS_MovementComponent::CheckHasReachedGround()
+{
+	const FVector DownVector = -UpdatedComponent->GetUpVector();
+	const FVector StartOffset = DownVector * 50.f;
+	const FVector Start = UpdatedComponent->GetComponentLocation() + StartOffset;
+	const FVector End = Start + DownVector;
+	TArray<FHitResult> Hits = DoCapsuleTraceMultiByObject(Start, End, true);
+	if (Hits.IsEmpty()) { return false; }
+	for (const FHitResult& Hit : Hits)
+	{
+		const bool bFloorReached = FVector::Parallel(-Hit.ImpactNormal, FVector::UpVector)
+		&& GetUnrotatedClimbVelocity().Z < -10.f;
+		if (bFloorReached) { return true; }
+	}
+	return false;
 }
 
 FQuat USRS_MovementComponent::GetClimbRotation(float DeltaTime)
