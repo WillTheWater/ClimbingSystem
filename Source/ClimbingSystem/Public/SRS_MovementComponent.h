@@ -31,6 +31,7 @@ public:
 	bool IsClimbing() const;
 	bool CanClimb();
 	void StartClimbing();
+	bool CanClimbDown();
 	void StopClimbing();
 	void PhysClimbing(float DeltaTime, int32 Iterations);
 	void ProcessClimbableSurface();
@@ -80,6 +81,12 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Climbing", meta = (AllowPrivateAccess = "true"))
 	float MaxClimbAcceleration { 300.f };
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Climbing", meta = (AllowPrivateAccess = "true"))
+	float ClimbDownTraceDistance { 50.f };
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Climbing", meta = (AllowPrivateAccess = "true"))
+	float LedgeTraceDistance { 50.f };
 
 	FVector CurrentClimbableSurfaceLocation { FVector::ZeroVector };
 	FVector CurrentClimbableSurfaceNormal { FVector::ZeroVector };
