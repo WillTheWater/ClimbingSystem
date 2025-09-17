@@ -83,10 +83,10 @@ private:
 	float MaxClimbAcceleration { 300.f };
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Climbing", meta = (AllowPrivateAccess = "true"))
-	float ClimbDownTraceDistance { 50.f };
+	float ClimbDownTraceDistance { 20.f };
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Climbing", meta = (AllowPrivateAccess = "true"))
-	float LedgeTraceDistance { 50.f };
+	float LedgeTraceDistance { 30.f };
 
 	FVector CurrentClimbableSurfaceLocation { FVector::ZeroVector };
 	FVector CurrentClimbableSurfaceNormal { FVector::ZeroVector };
@@ -99,4 +99,7 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Climbing", meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* ClimbUpLedge;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Climbing", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* ClimbDownLedge;
 };

@@ -80,8 +80,6 @@ void USRS_MovementComponent::TickComponent(float DeltaTime, enum ELevelTick Tick
                                            FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	CanClimbDown();
 }
 
 void USRS_MovementComponent::OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode)
@@ -179,11 +177,7 @@ void USRS_MovementComponent::ToggleClimbing(bool bEnableClimbing)
 		}
 		else if (CanClimbDown())
 		{
-			Debug::Print(TEXT("Can Climb Down"), FColor::Blue, 1);
-		}
-		else
-		{
-			Debug::Print(TEXT("Can't Climb Down"), FColor::Red, 1);
+			PlayClimbMontage(ClimbDownLedge);
 		}
 	}
 	else
@@ -218,10 +212,10 @@ bool USRS_MovementComponent::CanClimbDown()
 	const FVector ComponentDown = -UpdatedComponent->GetUpVector();
 	const FVector Start = ComponentLocation + ComponentForward * ClimbDownTraceDistance;
 	const FVector End = Start + ComponentDown * 100.f;
-	FHitResult Hit = DoLineTraceSingleByObject(Start, End, true);
+	FHitResult Hit = DoLineTraceSingleByObject(Start, End);
 	const FVector LedgeStart = Hit.TraceStart + ComponentForward * LedgeTraceDistance;
 	const FVector LedgeEnd = LedgeStart + ComponentDown * 200.f;
-	FHitResult LedgeHit = DoLineTraceSingleByObject(LedgeStart, LedgeEnd, true);
+	FHitResult LedgeHit = DoLineTraceSingleByObject(LedgeStart, LedgeEnd);
 	if (Hit.bBlockingHit && !LedgeHit.bBlockingHit)
 	{
 		return true;
@@ -377,11 +371,12 @@ void USRS_MovementComponent::PlayClimbMontage(UAnimMontage* MontageToPlay)
 
 void USRS_MovementComponent::OnClimbMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-	if (Montage == IdleToClimb)
+	if (Montage == IdleToClimb || Montage == ClimbDownLedge)
 	{
 		StartClimbing();
+		StopMovementImmediately();
 	}
-	else
+	if (Montage == ClimbUpLedge)
 	{
 		SetMovementMode(MOVE_Walking);
 	}
