@@ -128,6 +128,18 @@ float USRS_MovementComponent::GetMaxAcceleration() const
 	return Super::GetMaxAcceleration();
 }
 
+FVector USRS_MovementComponent::ConstrainAnimRootMotionVelocity(const FVector& RootMotionVelocity,
+	const FVector& CurrentVelocity) const
+{
+	const bool bIsPlayingClimbMontage = IsFalling() && OwningPlayerAnimInstance && OwningPlayerAnimInstance->IsAnyMontagePlaying();
+	if (bIsPlayingClimbMontage)
+	{
+		return RootMotionVelocity;
+	}
+	return Super::ConstrainAnimRootMotionVelocity(RootMotionVelocity, CurrentVelocity);
+	
+}
+
 bool USRS_MovementComponent::TraceClimbableSurfaces()
 {
 	const FVector StartOffset = UpdatedComponent->GetForwardVector() * 30.f;
@@ -151,8 +163,7 @@ FHitResult USRS_MovementComponent::TraceFromEyeHeight(float TraceDistance, float
 	return DoLineTraceSingleByObject
 	(
 		Start,
-		End,
-		true
+		End
 	);
 }
 
@@ -237,7 +248,7 @@ void USRS_MovementComponent::PhysClimbing(float DeltaTime, int32 Iterations)
 	SnapToClimbableSurface(DeltaTime);
 	if (HasReachLedge())
 	{
-		Debug::Print("Ledge Reached");
+		PlayClimbMontage(ClimbUpLedge);
 	}
 }
 
@@ -340,5 +351,9 @@ void USRS_MovementComponent::OnClimbMontageEnded(UAnimMontage* Montage, bool bIn
 	if (Montage == IdleToClimb)
 	{
 		StartClimbing();
+	}
+	else
+	{
+		SetMovementMode(MOVE_Walking);
 	}
 }
