@@ -13,6 +13,7 @@ class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
 class USRS_MovementComponent;
+class UMotionWarpingComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -35,6 +36,9 @@ private:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	USRS_MovementComponent* CustomMovementComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	UMotionWarpingComponent* MotionWarpingComponent;
 	
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -76,5 +80,7 @@ public:
 	FORCEINLINE  UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 	/** Returns CustomMovementComponent subobject **/
 	FORCEINLINE  USRS_MovementComponent* GetCustomMovementComponent() const { return CustomMovementComponent; }
+	/** Returns MotionWarpingComponent subobject **/
+	FORCEINLINE  UMotionWarpingComponent* GetMotionWarpingComponent() const { return MotionWarpingComponent; }
 };
 
