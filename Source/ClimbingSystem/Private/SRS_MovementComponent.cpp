@@ -3,6 +3,8 @@
 
 #include "ClimbingSystem/Public/SRS_MovementComponent.h"
 
+#include "MotionWarpingComponent.h"
+#include "ClimbingSystem/ClimbingSystemCharacter.h"
 #include "GameFramework/Character.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "ClimbingSystem/Debugger/DebugHelper.h"
@@ -74,6 +76,8 @@ void USRS_MovementComponent::BeginPlay()
 		OwningPlayerAnimInstance->OnMontageEnded.AddDynamic(this, &ThisClass::OnClimbMontageEnded);
 		OwningPlayerAnimInstance->OnMontageBlendingOut.AddDynamic(this, &ThisClass::OnClimbMontageEnded);
 	}
+
+	OwningClimbingCharacter = Cast<AClimbingSystemCharacter>(CharacterOwner);
 }
 
 void USRS_MovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,
@@ -327,7 +331,10 @@ void USRS_MovementComponent::TryStartVaulting()
 	FVector VaultStart, VaultEnd;
 	if (CanVault(VaultStart, VaultEnd))
 	{
-		// Start vaulting
+		SetMotionWarpTarget(FName("VaultStart"), VaultStart);
+		SetMotionWarpTarget(FName("VaultEnd"), VaultEnd);
+		StartClimbing();
+		PlayClimbMontage(Vault);
 	}
 }
 
@@ -341,10 +348,10 @@ bool USRS_MovementComponent::CanVault(FVector& VaultStart, FVector& ValutEnd)
 	const FVector ComponentUp = UpdatedComponent->GetUpVector();
 	const FVector ComponentDown = -UpdatedComponent->GetUpVector();
 
-	for (int32 i = 0; i < 5; ++i)
+	for (int32 i = 0; i < 5; i++)
 	{
-		const FVector Start = ComponentLocation + ComponentUp * 100.f + ComponentForward * 100.f * i + 1;
-		const FVector End = Start + ComponentDown * 100.f;
+		const FVector Start = ComponentLocation + ComponentUp * 100.f + ComponentForward * 100.f * (i + 1);
+		const FVector End = Start + ComponentDown * 100.f * (i + 1);
 		FHitResult Hit = DoLineTraceSingleByObject(Start, End, true, true);
 		if (i == 0 && Hit.bBlockingHit)
 		{
@@ -416,8 +423,16 @@ void USRS_MovementComponent::OnClimbMontageEnded(UAnimMontage* Montage, bool bIn
 		StartClimbing();
 		StopMovementImmediately();
 	}
-	if (Montage == ClimbUpLedge)
+	if (Montage == ClimbUpLedge || Montage == Vault)
 	{
 		SetMovementMode(MOVE_Walking);
 	}
+}
+
+void USRS_MovementComponent::SetMotionWarpTarget(const FName& WarpTargetName, const FVector& TargetLocation)
+{
+	if (!OwningClimbingCharacter) { return; }
+	UMotionWarpingComponent* MotionWarpingComp = OwningClimbingCharacter->GetMotionWarpingComponent();
+	if (!MotionWarpingComp) { return; }
+	MotionWarpingComp->AddOrUpdateWarpTargetFromLocation(WarpTargetName, TargetLocation);
 }

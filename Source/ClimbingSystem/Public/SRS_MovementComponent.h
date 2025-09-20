@@ -6,6 +6,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "SRS_MovementComponent.generated.h"
 
+class AClimbingSystemCharacter;
 class UAnimMontage;
 class UAnimInstance;
 
@@ -46,6 +47,8 @@ public:
 
 	UFUNCTION()
 	void OnClimbMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+
+	void SetMotionWarpTarget(const FName& WarpTargetName, const FVector& TargetLocation);
 
 	TArray<FHitResult> ClimbableSurfacesHits;
 
@@ -96,6 +99,9 @@ private:
 	UPROPERTY()
 	UAnimInstance* OwningPlayerAnimInstance;
 
+	UPROPERTY()
+	AClimbingSystemCharacter* OwningClimbingCharacter;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Climbing", meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* IdleToClimb;
 
@@ -104,4 +110,7 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Climbing", meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* ClimbDownLedge;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Climbing", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* Vault;
 };
