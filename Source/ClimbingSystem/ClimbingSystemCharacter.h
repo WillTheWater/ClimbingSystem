@@ -64,12 +64,15 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* ClimbAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* ClimbHopAction;
 	
 	void HandleGroundInput(const FInputActionValue& Value);
 	void HandleClimbInput(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void ClimbActionStarted(const FInputActionValue& Value);
-			
+	void ClimbHopActionStarted(const FInputActionValue& Value);
 
 protected:
 	// APawn interface
