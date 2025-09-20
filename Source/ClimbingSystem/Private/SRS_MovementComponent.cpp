@@ -179,8 +179,12 @@ void USRS_MovementComponent::ToggleClimbing(bool bEnableClimbing)
 		{
 			PlayClimbMontage(ClimbDownLedge);
 		}
+		else
+		{
+			TryStartVaulting();
+		}
 	}
-	else
+	if (!bEnableClimbing)
 	{
 		StopClimbing();
 	}
@@ -316,6 +320,42 @@ bool USRS_MovementComponent::CheckHasReachedGround()
 		if (bFloorReached) { return true; }
 	}
 	return false;
+}
+
+void USRS_MovementComponent::TryStartVaulting()
+{
+	FVector VaultStart, VaultEnd;
+	if (CanVault(VaultStart, VaultEnd))
+	{
+		// Start vaulting
+	}
+}
+
+bool USRS_MovementComponent::CanVault(FVector& VaultStart, FVector& ValutEnd)
+{
+	if (IsFalling()) { return false; }
+	VaultStart = FVector::ZeroVector;
+	ValutEnd = FVector::ZeroVector;
+	const FVector ComponentLocation = UpdatedComponent->GetComponentLocation();
+	const FVector ComponentForward = UpdatedComponent->GetForwardVector();
+	const FVector ComponentUp = UpdatedComponent->GetUpVector();
+	const FVector ComponentDown = -UpdatedComponent->GetUpVector();
+
+	for (int32 i = 0; i < 5; ++i)
+	{
+		const FVector Start = ComponentLocation + ComponentUp * 100.f + ComponentForward * 100.f * i + 1;
+		const FVector End = Start + ComponentDown * 100.f;
+		FHitResult Hit = DoLineTraceSingleByObject(Start, End, true, true);
+		if (i == 0 && Hit.bBlockingHit)
+		{
+			VaultStart = Hit.ImpactPoint;
+		}
+		if (i == 4 && Hit.bBlockingHit)
+		{
+			ValutEnd = Hit.ImpactPoint;
+		}
+	}
+	return !VaultStart.IsZero() && !ValutEnd.IsZero();
 }
 
 FQuat USRS_MovementComponent::GetClimbRotation(float DeltaTime)

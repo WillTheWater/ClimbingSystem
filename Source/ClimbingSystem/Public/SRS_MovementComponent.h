@@ -37,6 +37,8 @@ public:
 	void ProcessClimbableSurface();
 	bool ShouldStopClimbing();
 	bool CheckHasReachedGround();
+	void TryStartVaulting();
+	bool CanVault(FVector& VaultStart, FVector& VaultEnd);
 	FQuat GetClimbRotation(float DeltaTime);
 	void SnapToClimbableSurface(float DeltaTime);
 	bool HasReachLedge();
