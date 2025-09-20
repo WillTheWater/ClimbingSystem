@@ -58,59 +58,59 @@ AClimbingSystemCharacter::AClimbingSystemCharacter(const FObjectInitializer& Obj
 	MotionWarpingComponent = CreateDefaultSubobject<UMotionWarpingComponent>(TEXT("MotionWarpingComponent"));
 }
 
-void AClimbingSystemCharacter::BeginPlay()
+void AClimbingSystemCharacter::OnEnterClimbState()
 {
-	// Call the base class  
-	Super::BeginPlay();
+	AddInputMappingContext(ClimbMappingContext, 1);
 }
 
-//////////////////////////////////////////////////////////////////////////
-// Input
-
-void AClimbingSystemCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void AClimbingSystemCharacter::OnExitClimbState()
 {
-	// Add Input Mapping Context
+	RemoveInputMappingContext(ClimbMappingContext);
+}
+
+void AClimbingSystemCharacter::AddInputMappingContext(UInputMappingContext* InContext, int32 InPriority)
+{
 	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{
-			Subsystem->AddMappingContext(DefaultMappingContext, 0);
+			Subsystem->AddMappingContext(InContext, InPriority);
 		}
-	}
-	
-	// Set up action bindings
-	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
-		
-		// Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-
-		// Moving
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AClimbingSystemCharacter::Move);
-
-		// Looking
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AClimbingSystemCharacter::Look);
-
-		// Climbing
-		EnhancedInputComponent->BindAction(ClimbAction, ETriggerEvent::Started, this, &AClimbingSystemCharacter::ClimbActionStarted);
-	}
-	else
-	{
-		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
 }
 
-void AClimbingSystemCharacter::Move(const FInputActionValue& Value)
+void AClimbingSystemCharacter::RemoveInputMappingContext(UInputMappingContext* InContext)
 {
-	if (!CustomMovementComponent) { return; }
-
-	if (CustomMovementComponent->IsClimbing())
+	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 	{
-		HandleClimbInput(Value);
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			Subsystem->RemoveMappingContext(InContext);
+		}
 	}
-	else
+}
+
+void AClimbingSystemCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	if (CustomMovementComponent)
 	{
-		HandleGroundInput(Value);
+		CustomMovementComponent->OnEnterClimbState.BindUObject(this, &ThisClass::OnEnterClimbState);
+		CustomMovementComponent->OnExitClimbState.BindUObject(this, &ThisClass::OnExitClimbState);
+	}
+}
+
+void AClimbingSystemCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	AddInputMappingContext(DefaultMappingContext, 0);
+	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+	{
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AClimbingSystemCharacter::HandleGroundInput);
+		EnhancedInputComponent->BindAction(ClimbMoveAction, ETriggerEvent::Triggered, this, &AClimbingSystemCharacter::HandleClimbInput);
+		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AClimbingSystemCharacter::Look);
+		EnhancedInputComponent->BindAction(ClimbAction, ETriggerEvent::Started, this, &AClimbingSystemCharacter::ClimbActionStarted);
 	}
 }
 

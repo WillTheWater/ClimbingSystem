@@ -6,6 +6,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "SRS_MovementComponent.generated.h"
 
+DECLARE_DELEGATE(FOnEnterClimbState)
+DECLARE_DELEGATE(FOnExitClimbState)
+
 class AClimbingSystemCharacter;
 class UAnimMontage;
 class UAnimInstance;
@@ -44,6 +47,9 @@ public:
 	void SnapToClimbableSurface(float DeltaTime);
 	bool HasReachLedge();
 	void PlayClimbMontage(UAnimMontage* MontageToPlay);
+
+	FOnEnterClimbState OnEnterClimbState;
+	FOnExitClimbState OnExitClimbState;
 
 	UFUNCTION()
 	void OnClimbMontageEnded(UAnimMontage* Montage, bool bInterrupted);

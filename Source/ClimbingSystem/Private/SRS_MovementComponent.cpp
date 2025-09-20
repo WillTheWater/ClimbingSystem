@@ -92,6 +92,7 @@ void USRS_MovementComponent::OnMovementModeChanged(EMovementMode PreviousMovemen
 	{
 		bOrientRotationToMovement = false;
 		CharacterOwner->GetCapsuleComponent()->SetCapsuleHalfHeight(48.f);
+		OnEnterClimbState.ExecuteIfBound();
 	}
 	if (PreviousMovementMode == MOVE_Custom && PreviousCustomMode == ECustomMovementMode::MOVE_Climb)
 	{
@@ -101,6 +102,7 @@ void USRS_MovementComponent::OnMovementModeChanged(EMovementMode PreviousMovemen
 		const FRotator CleanRotation = FRotator(0.f, DirtyRotation.Yaw, 0.f);
 		UpdatedComponent->SetRelativeRotation(CleanRotation);
 		StopMovementKeepPathing();
+		OnExitClimbState.ExecuteIfBound();
 	}
 	Super::OnMovementModeChanged(PreviousMovementMode, PreviousCustomMode);
 }
@@ -352,7 +354,7 @@ bool USRS_MovementComponent::CanVault(FVector& VaultStart, FVector& ValutEnd)
 	{
 		const FVector Start = ComponentLocation + ComponentUp * 100.f + ComponentForward * 100.f * (i + 1);
 		const FVector End = Start + ComponentDown * 100.f * (i + 1);
-		FHitResult Hit = DoLineTraceSingleByObject(Start, End, true, true);
+		FHitResult Hit = DoLineTraceSingleByObject(Start, End);
 		if (i == 0 && Hit.bBlockingHit)
 		{
 			VaultStart = Hit.ImpactPoint;
