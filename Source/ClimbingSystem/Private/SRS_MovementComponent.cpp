@@ -196,6 +196,29 @@ void USRS_MovementComponent::ToggleClimbing(bool bEnableClimbing)
 	}
 }
 
+void USRS_MovementComponent::RequestHop()
+{
+	const FVector HopDirection = UKismetMathLibrary::Quat_UnrotateVector(UpdatedComponent->GetComponentQuat(),GetLastInputVector());
+	const float HopDot = FVector::DotProduct(HopDirection.GetSafeNormal(), FVector::UpVector);
+	const float HopDotSide = FVector::DotProduct(HopDirection.GetSafeNormal(), UpdatedComponent->GetRightVector());
+	if (HopDot >= 0.9f)
+	{
+		// Up
+	}
+	else if (HopDot <= -0.9f)
+	{
+		// Down
+	}
+	else if (HopDotSide >= 0.9f)
+	{
+		// Right
+	}
+	else if (HopDotSide <= -0.9f)
+	{
+		// Left
+	}
+}
+
 bool USRS_MovementComponent::IsClimbing() const
 {
 	return MovementMode == MOVE_Custom && CustomMovementMode == ECustomMovementMode::MOVE_Climb;

@@ -180,5 +180,6 @@ void AClimbingSystemCharacter::ClimbActionStarted(const FInputActionValue& Value
 
 void AClimbingSystemCharacter::ClimbHopActionStarted(const FInputActionValue& Value)
 {
-	Debug::Print("Hop!");
+	if (!CustomMovementComponent) { return; }
+	CustomMovementComponent->RequestHop();
 }

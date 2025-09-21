@@ -32,6 +32,7 @@ public:
 	FHitResult TraceFromEyeHeight(float TraceDistance, float StartOffset = 0.f);
 
 	void ToggleClimbing(bool bEnableClimbing);
+	void RequestHop();
 	bool IsClimbing() const;
 	bool CanClimb();
 	void StartClimbing();
