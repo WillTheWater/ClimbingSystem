@@ -203,11 +203,11 @@ void USRS_MovementComponent::RequestHop()
 	const float HopDotSide = FVector::DotProduct(HopDirection.GetSafeNormal(), UpdatedComponent->GetRightVector());
 	if (HopDot >= 0.9f)
 	{
-		// Up
+		HandleHopUp();
 	}
 	else if (HopDot <= -0.9f)
 	{
-		// Down
+		HandleHopDown();
 	}
 	else if (HopDotSide >= 0.9f)
 	{
@@ -460,4 +460,42 @@ void USRS_MovementComponent::SetMotionWarpTarget(const FName& WarpTargetName, co
 	UMotionWarpingComponent* MotionWarpingComp = OwningClimbingCharacter->GetMotionWarpingComponent();
 	if (!MotionWarpingComp) { return; }
 	MotionWarpingComp->AddOrUpdateWarpTargetFromLocation(WarpTargetName, TargetLocation);
+}
+
+void USRS_MovementComponent::HandleHopUp()
+{
+	if (CanHopUp())
+	{
+		PlayClimbMontage(HopUp);
+	}
+}
+
+bool USRS_MovementComponent::CanHopUp()
+{
+	FHitResult Hit = TraceFromEyeHeight(100.f, -30.f);
+	FHitResult LedgeHit = TraceFromEyeHeight(100.f, 150.f);
+	if (Hit.bBlockingHit && LedgeHit.bBlockingHit)
+	{
+		return true;
+	}
+	return false;
+}
+
+void USRS_MovementComponent::HandleHopDown()
+{
+	if (CanHopDown())
+	{
+		PlayClimbMontage(HopDown);
+	}
+}
+
+bool USRS_MovementComponent::CanHopDown()
+{
+	const FVector DownVector = -UpdatedComponent->GetUpVector();
+	FHitResult Hit = DoLineTraceSingleByObject(UpdatedComponent->GetComponentLocation(), UpdatedComponent->GetComponentLocation() + DownVector * 100.f);
+	if (!Hit.bBlockingHit)
+	{
+		return true;
+	}
+	return false;
 }

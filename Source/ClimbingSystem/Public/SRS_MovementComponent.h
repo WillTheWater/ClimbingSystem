@@ -57,6 +57,11 @@ public:
 
 	void SetMotionWarpTarget(const FName& WarpTargetName, const FVector& TargetLocation);
 
+	void HandleHopUp();
+	bool CanHopUp();
+	void HandleHopDown();
+	bool CanHopDown();
+
 	TArray<FHitResult> ClimbableSurfacesHits;
 
 	FORCEINLINE FVector GetClimbableSurfaceLocation() const { return CurrentClimbableSurfaceLocation; }
@@ -120,4 +125,10 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Climbing", meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* Vault;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Climbing", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* HopUp;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Climbing", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* HopDown;
 };
